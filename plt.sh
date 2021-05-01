@@ -4,9 +4,8 @@ genyaml=false
 
 if [ $genyaml = "true" ]; then
    echo "generating confg.yaml"
-fi
 
-exp=a05v
+exp=a064
 diagdir=/work/noaa/da/sliu/R2D2/gfs/diag/$exp/PT6H/tmp
 
 cat > config.yaml <<EOF
@@ -18,6 +17,8 @@ inputfile: diag
 OBSTYPE: T
 subtask: 5
 EOF
+
+fi
 
 python plt_ufo_omb.py
 
