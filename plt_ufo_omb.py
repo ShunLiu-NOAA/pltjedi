@@ -66,21 +66,24 @@ def plt_ufo_t(gsi,ufo,hgt,OBSTYPE):
    ax2.scatter(gsi,gsix, color='blue',label="rw", marker='o', s=3)
    plt.xlabel('gsi')
    plt.ylabel('ufo')
+#  plt.text(180,300,'obstype 120')
    plt.title(thisobstype+':gsi and ufo hofx scatter')
 
    diff=gsi-ufo
    ax3=fig.add_subplot(223)
    ax3.scatter(diff,hgt, color='blue',label="rw", marker='o', s=3)
    plt.xlabel('gsi')
-   plt.ylabel('ufo')
+   plt.ylabel('height')
+   plt.grid(True)
    plt.title(thisobstype+':gsi-ufo scatter in vertical')
 
-   diff=gsi-gsix
+#  diff=gsi-gsix
    ax4=fig.add_subplot(224)
    ax4.scatter(gsi,hgt, color='blue',label="rw", marker='o', s=3)
    plt.xlabel('gsi')
-   plt.ylabel('ufo')
-   plt.title(thisobstype+':gsibc-gsi scatter in vertical')
+   plt.ylabel('height')
+   plt.grid(True)
+   plt.title(thisobstype+':gsi hofx in vertical')
 
 #  plt.title(thisobstype+':gsihofXBc and hofX scatter')
 
@@ -114,7 +117,8 @@ if __name__ == '__main__':
    filename=fldir+'/'+config['inputfile']+'_'+str(i)+'.nc4'
    gsi,ufo,hgt=read_diag(filename,OBSTYPE,VarName)
 
-   for i in range(1,65):
+   for i in range(1,116):
+#  for i in range(1,10):
      filename=fldir+'/'+config['inputfile']+'_'+str(i)+'.nc4'
      print(filename)
      gsitmp,ufotmp,hgttmp=read_diag(filename,OBSTYPE,VarName)
@@ -125,5 +129,8 @@ if __name__ == '__main__':
      print(len(gsi))
 #    print(type(gsitem))
 
+   if OBSTYPE=='SPFH' :
+     gsi=gsi*1000.0
+     ufo=ufo*1000.0
    plt_ufo_t(gsi,ufo,hgt,OBSTYPE)
 
