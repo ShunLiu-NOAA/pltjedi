@@ -7,6 +7,7 @@ from netCDF4 import Dataset
 import argparse
 import time
 import yaml
+from scipy import stats
 
 #from datetime import datetime
 #import matplotlib.colors as colors
@@ -30,15 +31,40 @@ def read_diag(filename,OBSTYPE,VarName):
    gsihofX  =thisvarname+'@GsiHofX'
    ufohofX  =thisvarname+'@hofx'
    obstype_num  =thisvarname+'@ObsType'
+   ufo_effectiveqc  =thisvarname+'@EffectiveQC'
    f=Dataset(filename, mode='r')
    gsi_observer_hofXBc=f.variables[gsihofXBc][:]
    gsi_observer_hofX  =f.variables[gsihofX][:]
    ufo                =f.variables[ufohofX][:]
    gsiobstype         =f.variables[obstype_num][:]
    height             =f.variables['height@MetaData'][:]
+   pres               =f.variables['air_pressure@MetaData'][:]
+   ufoqc              =f.variables[ufo_effectiveqc][:]
    f.close()
    height=height/1000.0
-   return gsi_observer_hofX,ufo,height
+   return gsi_observer_hofX,ufo,height,pres
+
+def han(gsi,ufo):
+#  k2,p=stats.mstats.normaltest(gsi)
+#  print("==================")
+#  print("normaltest::")
+#  print(k2,p)
+#  print("==================")
+
+#  print(stats.describe(gsi_observer_noqc))
+#  print(stats.tstd(gsi_observer_noqc))
+#  exit()
+
+   diff=ufo-gsi
+   k2,p=stats.mstats.ttest_1samp(diff,0.0)
+   print("1 sample test gsi-ufo::")
+   print(k2,p)
+   print("==================")
+
+   k2,p=stats.mstats.ttest_ind(ufo, gsi)
+   print("two sample test ufo-gsi with QC::")
+   print(k2,p)
+   print("==================")
      
 def plt_ufo_t(gsi,ufo,hgt,OBSTYPE):
 
@@ -62,10 +88,12 @@ def plt_ufo_t(gsi,ufo,hgt,OBSTYPE):
    plt.ylabel('ufo')
    plt.title(thisobstype+':gsi and ufo hofx scatter')
 
+   diff=gsi-ufo
    ax2=fig.add_subplot(222)
-   ax2.scatter(gsi,gsix, color='blue',label="rw", marker='o', s=3)
+#  ax2.scatter(gsi,gsix, color='blue',label="rw", marker='o', s=3)
    plt.xlabel('gsi')
    plt.ylabel('ufo')
+   plt.hist(diff,bins=50)
 #  plt.text(180,300,'obstype 120')
    plt.title(thisobstype+':gsi and ufo hofx scatter')
 
@@ -115,22 +143,32 @@ if __name__ == '__main__':
 
    i=0
    filename=fldir+'/'+config['inputfile']+'_'+str(i)+'.nc4'
-   gsi,ufo,hgt=read_diag(filename,OBSTYPE,VarName)
+   gsi,ufo,hgt,pres,ufoqc=read_diag(filename,OBSTYPE,VarName)
 
-   for i in range(1,116):
-#  for i in range(1,10):
+#  for i in range(1,116):
+   for i in range(1,112):
      filename=fldir+'/'+config['inputfile']+'_'+str(i)+'.nc4'
      print(filename)
-     gsitmp,ufotmp,hgttmp=read_diag(filename,OBSTYPE,VarName)
+     gsitmp,ufotmp,hgttmp,prestmp,ufoqc=read_diag(filename,OBSTYPE,VarName)
      print(len(gsitmp))
      gsi=np.ma.concatenate((gsi,gsitmp))
      ufo=np.ma.concatenate((ufo,ufotmp))
      hgt=np.ma.concatenate((hgt,hgttmp))
-     print(len(gsi))
+     pres=np.ma.concatenate((pres,prestmp))
+#    print(len(gsi))
 #    print(type(gsitem))
 
+   print(gsi.count())
+   print(ufo.count())
+   print(hgt.count())
+   print(pres.count())
+#  ufo=np.ma.masked_where(np.ma.getmask(gsi),ufo)
+   ufo=np.ma.masked_where(np.ma.getmask(gsi),ufo)
+#  print(ufo.count())
+   exit()
    if OBSTYPE=='SPFH' :
      gsi=gsi*1000.0
      ufo=ufo*1000.0
-   plt_ufo_t(gsi,ufo,hgt,OBSTYPE)
+#  plt_ufo_t(gsi,ufo,hgt,OBSTYPE)
+#  han(gsi,ufo)
 
