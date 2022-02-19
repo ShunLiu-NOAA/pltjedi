@@ -1,0 +1,7 @@
+paths:
+   inputdir: /work/noaa/da/sliu/R2D2/gfs/diag/a064_save/PT6H/tmp
+   outputdir: ./
+VarName: northward_wind
+inputfile: diag
+OBSTYPE: V
+subtask: 5
