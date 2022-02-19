@@ -32,6 +32,7 @@ def read_diag(filename,OBSTYPE,VarName):
    ufohofX  =thisvarname+'@hofx'
    obstype_num  =thisvarname+'@ObsType'
    ufo_effectiveqc  =thisvarname+'@EffectiveQC'
+   gsi_effecterror  =thisvarname+'@EffectiveError'
    f=Dataset(filename, mode='r')
    gsi_observer_hofXBc=f.variables[gsihofXBc][:]
    gsi_observer_hofX  =f.variables[gsihofX][:]
@@ -40,9 +41,10 @@ def read_diag(filename,OBSTYPE,VarName):
    height             =f.variables['height@MetaData'][:]
    pres               =f.variables['air_pressure@MetaData'][:]
    ufoqc              =f.variables[ufo_effectiveqc][:]
+   gsiqc              =f.variables[gsi_effecterror][:]
    f.close()
    height=height/1000.0
-   return gsi_observer_hofX,ufo,height,pres
+   return gsi_observer_hofX,ufo,height,pres,ufoqc,gsiqc
 
 def han(gsi,ufo):
 #  k2,p=stats.mstats.normaltest(gsi)
@@ -143,28 +145,32 @@ if __name__ == '__main__':
 
    i=0
    filename=fldir+'/'+config['inputfile']+'_'+str(i)+'.nc4'
-   gsi,ufo,hgt,pres,ufoqc=read_diag(filename,OBSTYPE,VarName)
+   gsi,ufo,hgt,pres,ufoqc,gsiqc=read_diag(filename,OBSTYPE,VarName)
 
 #  for i in range(1,116):
-   for i in range(1,112):
+   for i in range(1,10):
      filename=fldir+'/'+config['inputfile']+'_'+str(i)+'.nc4'
      print(filename)
-     gsitmp,ufotmp,hgttmp,prestmp,ufoqc=read_diag(filename,OBSTYPE,VarName)
+     gsitmp,ufotmp,hgttmp,prestmp,ufoqctmp,gsiqctmp=read_diag(filename,OBSTYPE,VarName)
      print(len(gsitmp))
      gsi=np.ma.concatenate((gsi,gsitmp))
      ufo=np.ma.concatenate((ufo,ufotmp))
+     gsiqc=np.ma.concatenate((gsiqc,ufotmp))
+     ufoqc=np.ma.concatenate((ufoqc,ufotmp))
      hgt=np.ma.concatenate((hgt,hgttmp))
      pres=np.ma.concatenate((pres,prestmp))
 #    print(len(gsi))
 #    print(type(gsitem))
 
-   print(gsi.count())
-   print(ufo.count())
-   print(hgt.count())
-   print(pres.count())
+   print("gsi",gsi.count())
+#  print("gsiqc",gsiqc.count())
+#  print("ufo",ufo.count())
+#  print("ufoqc",ufoqc.count())
+#  print("hgt",hgt.count())
+#  print("pres",pres.count())
 #  ufo=np.ma.masked_where(np.ma.getmask(gsi),ufo)
    ufo=np.ma.masked_where(np.ma.getmask(gsi),ufo)
-#  print(ufo.count())
+   print(ufo.count())
    exit()
    if OBSTYPE=='SPFH' :
      gsi=gsi*1000.0
